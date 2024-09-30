@@ -1,47 +1,45 @@
-const pokemonList = document.getElementById('pokemonList')
-const loadMoreButton = document.getElementById('loadMoreButton')
-
-const maxRecords = 151
-const limit = 10
+const pokemonList = document.getElementById('pokemon-list');
+const loadMoreButton = document.getElementById('load-more');
 let offset = 0;
-
-function convertPokemonToLi(pokemon) {
-    return `
-        <li class="pokemon ${pokemon.type}">
-            <span class="number">#${pokemon.number}</span>
-            <span class="name">${pokemon.name}</span>
-
-            <div class="detail">
-                <ol class="types">
-                    ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
-                </ol>
-
-                <img src="${pokemon.photo}"
-                     alt="${pokemon.name}">
-            </div>
-        </li>
-    `
+const limit = 9; // Número de Pokémon a serem carregados por vez
+// Função para buscar Pokémon da PokéAPI
+async function fetchPokemons(offset, limit) {
+  const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  const promises = data.results.map(async (pokemon) => {
+    const response = await fetch(pokemon.url);
+    return await response.json();
+  });
+  const pokemonDetails = await Promise.all(promises);
+  renderPokemons(pokemonDetails);
 }
-
-function loadPokemonItens(offset, limit) {
-    pokeApi.getPokemons(offset, limit).then((pokemons = []) => {
-        const newHtml = pokemons.map(convertPokemonToLi).join('')
-        pokemonList.innerHTML += newHtml
-    })
+// Função para renderizar os Pokémon na lista
+function renderPokemons(pokemons) {
+  pokemons.forEach(pokemon => {
+    const types = pokemon.types.map(type => type.type.name);
+    const pokemonCard = document.createElement('div');
+    pokemonCard.classList.add('pokemon-card');
+    pokemonCard.innerHTML = `
+            <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+            <h2>${pokemon.name}</h2>
+            <p>#${pokemon.id}</p>
+            ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+        `;
+    pokemonCard.addEventListener('click', () => {
+      openPokemonDetails(pokemon);
+    });
+    pokemonList.appendChild(pokemonCard);
+  });
 }
-
-loadPokemonItens(offset, limit)
-
+// Função para carregar mais Pokémon ao clicar no botão
 loadMoreButton.addEventListener('click', () => {
-    offset += limit
-    const qtdRecordsWithNexPage = offset + limit
-
-    if (qtdRecordsWithNexPage >= maxRecords) {
-        const newLimit = maxRecords - offset
-        loadPokemonItens(offset, newLimit)
-
-        loadMoreButton.parentElement.removeChild(loadMoreButton)
-    } else {
-        loadPokemonItens(offset, limit)
-    }
-})
+  offset += limit;
+  fetchPokemons(offset, limit);
+});
+// Função para abrir detalhes de um Pokémon
+function openPokemonDetails(pokemon) {
+  window.location.href = `pokemon.html?id=${pokemon.id}`;
+}
+// Carrega os primeiros Pokémon ao iniciar a página
+fetchPokemons(offset, limit);
