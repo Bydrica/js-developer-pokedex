@@ -17,4 +17,4 @@ detalhadas sobre o Pokémon selecionado, incluindo:
 ## Linguagens Utilizadas
 - **HTML5**: Estrutura e organização do conteúdo.
 - **CSS3**: Estilização e responsividade.
-- **JavaScript **: Manipulação da API, lógica do projeto e interações com o DOM.
+- **JavaScript**: Manipulação da API, lógica do projeto e interações com o DOM.
